@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 
-	"github.com/labstack/echo"
-	"github.com/labstack/echo/middleware"
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	"watsup.com/controllers"
 )
 
@@ -22,8 +22,9 @@ func main() {
 	}))
 
 	// Root route => handler
-	e.GET("/", controllers.GetLists)
-	e.GET("/list", controllers.GetSingleList)
+	e.POST("/dashboard-add", controllers.DashboardAdd)
+	e.GET("/dashboard-view", controllers.DashboardView)
+
 	fmt.Println("still working")
 	e.Logger.Fatal(e.Start(":8000"))
 
