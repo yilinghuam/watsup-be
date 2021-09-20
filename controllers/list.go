@@ -3,8 +3,12 @@ package controllers
 import (
 	"fmt"
 	"net/http"
+	"time"
 
+	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
+
+	"watsup.com/auth"
 	"watsup.com/models"
 )
 
@@ -20,19 +24,86 @@ type DashboardDetailsConfig struct {
 	Name             string `json:"name"`
 	Order_date       string `json:"order_date"`
 }
-type DashboardSetupConfig struct {
-	Item     string `json:"item"`
-	Price    int8   `json:"price"`
-	Quantity int16  `json:"quantity"`
-}
+
 type DashboardAddConfig struct {
-	Details DashboardDetailsConfig `json:"Details"`
-	Setup   []DashboardSetupConfig `json:"Setup"`
+	Details DashboardDetailsConfig        `json:"Details"`
+	Setup   []models.DashboardSetupConfig `json:"Setup"`
+}
+
+func Login(c echo.Context) error {
+	// validate token first
+	var token auth.TokenConfig
+	if err := c.Bind(&token); err != nil {
+		fmt.Println(err.Error())
+		return err
+	}
+	email, err := auth.ValidateGoogleToken(token)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "token validation error")
+	}
+	fmt.Println(email)
+
+	// check if email exists in database and create account if does not exist
+	user, usererr := models.CheckUserExist(email)
+	if usererr != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "email search error")
+	}
+	fmt.Printf("user is %s", user)
+	if user == "created" || user == "null" {
+		token := jwt.New(jwt.SigningMethodHS256)
+		// Set claims
+		// This is the information which frontend can use
+		// The backend can also decode the token and get admin etc.
+		claims := token.Claims.(jwt.MapClaims)
+		claims["name"] = email
+		claims["admin"] = true
+		claims["exp"] = time.Now().Add(time.Hour * 72).Unix()
+		// Generate encoded token and send it as response.
+		// The signing string should be secret (a generated UUID          works too)
+		t, err := token.SignedString([]byte("secret"))
+
+		if err != nil {
+			return err
+		}
+		return c.JSON(http.StatusOK, map[string]string{
+			"EmailAuth": t,
+		})
+	}
+	if (user != "created" && user != "") || user != "null" {
+		token := jwt.New(jwt.SigningMethodHS256)
+
+		claims := token.Claims.(jwt.MapClaims)
+		claims["name"] = user
+		claims["admin"] = true
+		claims["exp"] = time.Now().Add(time.Hour * 72).Unix()
+		t, err := token.SignedString([]byte("secret"))
+
+		if err != nil {
+			return err
+		}
+		return c.JSON(http.StatusOK, map[string]string{
+			"UserAuth": t,
+		})
+	}
+
+	return echo.ErrUnauthorized
+	// send normal token if user_Id already created
+	// return err
 }
 
 func DashboardAdd(c echo.Context) error {
 	fmt.Println("1")
-	fmt.Println(c.Request().Body)
+	fmt.Println(c.Request().Header.Get("user"))
+
+	sentuser := c.Get("user").(*jwt.Token)
+	fmt.Print(sentuser)
+
+	claims := sentuser.Claims.(jwt.MapClaims)
+	fmt.Print(claims)
+
+	ew := claims["email"].(string)
+	fmt.Print(ew)
+
 	var jsonBody DashboardAddConfig
 	if err := c.Bind(&jsonBody); err != nil {
 		return err
@@ -40,31 +111,7 @@ func DashboardAdd(c echo.Context) error {
 	fmt.Println(jsonBody.Details.Description)
 	// get user
 	user := c.Request().Header.Get("user")
-
-	// optionsbool:= jsonBody.Details.Delivery_options
-
-	// if optionsbool {
-	// 	price, err := strconv.ParseInt(c.FormValue("delivery_price"), 10, 64)
-	// 	table := models.CreateGroupbuyConfig{
-	// 		User_id:          c.Request().Header.Get("user"),
-	// 		Name:             c.FormValue("name"),
-	// 		Description:      c.FormValue("description"),
-	// 		Order_date:       c.FormValue("user_id"),
-	// 		Closing_date:     "01-12-2021",
-	// 		Delivery_options: optionsbool,
-	// 		Delivery_price:   price,
-	// 	}
-	// } else {
-	// 	table := models.CreateGroupbuyConfig{
-	// 		User_id:          "ling",
-	// 		Name:             "eat 3 bowls",
-	// 		Description:      "great food",
-	// 		Order_date:       "12-12-2021",
-	// 		Closing_date:     "01-12-2021",
-	// 		Delivery_options: true,
-	// 		Delivery_price:   5,
-	// 	}
-	// }
+	// set table for groupbuy creation
 	table := models.CreateGroupbuyConfig{
 		User_id:          user,
 		Name:             jsonBody.Details.Name,
@@ -80,13 +127,28 @@ func DashboardAdd(c echo.Context) error {
 	}
 
 	// create items using formsetup
+	name := jsonBody.Details.Name
+	setup := jsonBody.Setup
+
+	Itemerr := models.CreateGroupbuyItems(user, name, setup)
+	if Itemerr != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "create groupbuy items issues")
+	}
+
 	return err
 }
 
 func DashboardView(c echo.Context) error {
-	req := c.Request()
-	headers := req.Header
-	user := headers.Get("user")
+	fmt.Println("1")
+	token := c.Get("user").(*jwt.Token)
+
+	claims := token.Claims.(jwt.MapClaims)
+
+	user := claims["name"].(string)
+	fmt.Print(user)
+	// req := c.Request()
+	// headers := req.Header
+	// user := headers.Get("user")
 	lists, err := models.GroupbuyByHost(user)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "host groupbuy query issues")

@@ -22,8 +22,16 @@ func main() {
 	}))
 
 	// Root route => handler
-	e.POST("/dashboard-add", controllers.DashboardAdd)
-	e.GET("/dashboard-view", controllers.DashboardView)
+	e.POST("/login", controllers.Login)
+	r := e.Group("/auth")
+	config := middleware.JWTConfig{
+		SigningKey:    []byte("secret"),
+		SigningMethod: "HS256",
+	}
+	r.Use(middleware.JWTWithConfig(config))
+
+	r.POST("/dashboard-add", controllers.DashboardAdd)
+	r.GET("/dashboard-view", controllers.DashboardView)
 
 	fmt.Println("still working")
 	e.Logger.Fatal(e.Start(":8000"))

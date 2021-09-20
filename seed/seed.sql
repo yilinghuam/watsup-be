@@ -4,7 +4,6 @@ CREATE DATABASE watsup;
 
 CREATE TABLE watsup.users (
     user_id  VARCHAR(255) NOT NULL,
-    password VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL,
     PRIMARY KEY(user_id)
 );
@@ -48,9 +47,8 @@ USE watsup;
 -- Create a new account with name and address
 INSERT INTO watsup.users (
     user_id,
-    email,
-    password) VALUES ('ling','lingy93@gmail.com','123456'),
-('host','huamyiling@gmail.com','123456');
+    email) VALUES ('ling','jeff93@gmail.com'),
+('host','huamyiling@gmail.com');
 
 INSERT INTO watsup.groupbuy(
     groupbuy_id,
