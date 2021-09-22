@@ -52,7 +52,7 @@ func GetUserItemsByUser(user string, groupbuy_id int) ([]ItemConfig, error) {
 	// retrieve groupbuy_id
 	var items []ItemConfig
 
-	rows, err := db.Query(fmt.Sprintf("SELECT * FROM item WHERE groupbuy_id='%d' and user_id='%s'", user, groupbuy_id))
+	rows, err := db.Query(fmt.Sprintf("SELECT * FROM item WHERE groupbuy_id='%d' and user_id='%s'", groupbuy_id, user))
 	// close if there is an error
 	if err != nil {
 		fmt.Println(err)
