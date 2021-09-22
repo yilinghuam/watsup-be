@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -43,8 +44,11 @@ func main() {
 
 	r.POST("/dashboard-add", controllers.DashboardAdd)
 	r.GET("/dashboard-view", controllers.DashboardView)
-
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8000"
+	}
 	fmt.Println("still working")
-	e.Logger.Fatal(e.Start(envload.GoDotEnvVariable("PORT")))
+	e.Logger.Fatal(e.Start(":" + port))
 
 }
