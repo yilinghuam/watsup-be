@@ -45,6 +45,6 @@ func main() {
 	r.GET("/dashboard-view", controllers.DashboardView)
 
 	fmt.Println("still working")
-	e.Logger.Fatal(e.Start(":8000"))
+	e.Logger.Fatal(e.Start(envload.GoDotEnvVariable("PORT")))
 
 }
