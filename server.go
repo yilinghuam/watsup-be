@@ -3,20 +3,19 @@ package main
 import (
 	"fmt"
 
-	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"watsup.com/controllers"
+	"watsup.com/envload"
 )
 
 func main() {
-	godotenv.Load()
 
 	e := echo.New()
 	// Middleware
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
-
+	dotenv := envload.GoDotEnvVariable("JWT_SECRET")
 	//CORS
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{"*"},
@@ -28,7 +27,7 @@ func main() {
 
 	r := e.Group("/auth")
 	config := middleware.JWTConfig{
-		SigningKey:    []byte("secret"),
+		SigningKey:    []byte(dotenv),
 		SigningMethod: "HS256",
 	}
 	r.Use(middleware.JWTWithConfig(config))

@@ -6,6 +6,7 @@ import (
 	"log"
 
 	_ "github.com/go-sql-driver/mysql"
+	"watsup.com/envload"
 )
 
 var instance *sql.DB
@@ -15,24 +16,16 @@ func GetInstance() *sql.DB {
 }
 
 func init() {
-	// Initalize the sql.DB connection pool and assign it to the models.DB
 	var err error
-	// Capture connection properties.
-	// cfg := mysql.Config{
-	// 	User:   "lingy@watsup",  //os.Getenv("DBUSER")
-	// 	Passwd: "Chipmunk@001", //os.Getenv("DBPASS")
-	// 	Net:    "tcp",
-	// 	Addr:   "watsup.mysql.database.azure.com",
-	// 	DBName: "",
-	// }
-	const (
-		host     = "watsup.mysql.database.azure.com"
-		database = "watsup"
-		user     = "lingy@watsup"
-		password = "Chipmunk@001"
-	)
-	var connectionString = fmt.Sprintf("%s:%s@tcp(%s:3306)/%s?allowNativePasswords=true", user, password, host, database)
 
+	hostConfig := envload.GoDotEnvVariable("HOST")
+	databaseConfig := envload.GoDotEnvVariable("DATABASE")
+	UserConfig := envload.GoDotEnvVariable("DB_USER")
+	PasswordConfig := envload.GoDotEnvVariable("PASSWORD")
+	PortConfig := envload.GoDotEnvVariable("PORT")
+
+	var connectionString = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?allowNativePasswords=true", UserConfig, PasswordConfig, hostConfig, PortConfig, databaseConfig)
+	fmt.Println(connectionString)
 	// connect to sql
 	instance, err = sql.Open("mysql", connectionString)
 	if err != nil {
