@@ -22,7 +22,7 @@ func init() {
 	databaseConfig := envload.GoDotEnvVariable("DATABASE")
 	UserConfig := envload.GoDotEnvVariable("DB_USER")
 	PasswordConfig := envload.GoDotEnvVariable("PASSWORD")
-	PortConfig := envload.GoDotEnvVariable("PORT")
+	PortConfig := envload.GoDotEnvVariable("MICROSOFT_PORT")
 
 	var connectionString = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?allowNativePasswords=true", UserConfig, PasswordConfig, hostConfig, PortConfig, databaseConfig)
 	fmt.Println(connectionString)
