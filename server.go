@@ -3,12 +3,14 @@ package main
 import (
 	"fmt"
 
+	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"watsup.com/controllers"
 )
 
 func main() {
+	godotenv.Load()
 
 	e := echo.New()
 	// Middleware
