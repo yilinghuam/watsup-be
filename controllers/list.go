@@ -167,7 +167,7 @@ func AddIndividualOrder(c echo.Context) error {
 	}
 
 	order_id, err := models.CreateOrderByUser(json.Order[0].Groupbuy_id, user, json.Address)
-
+	fmt.Println(order_id)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "create order issues")
 	}

@@ -96,7 +96,7 @@ func CreateOrderByUser(groupbuy_id int16, user_id string, address string) (int64
 
 func OrdersByUser(user string) ([]GroupbuyDashboard, error) {
 	fmt.Println(user)
-	rows, err := database.GetInstance().Query(fmt.Sprintf("SELECT watsup.groupbuy.name, watsup.groupbuy.order_date, watsup.order.status FROM watsup.groupbuy INNER JOIN watsup.order ON watsup.order.groupbuy_id=watsup.groupbuy.groupbuy_id WHERE order.user_id = '%s'", user))
+	rows, err := database.GetInstance().Query(fmt.Sprintf("SELECT watsup.groupbuy.name, watsup.groupbuy.order_date, watsup.order.status, watsup.order.groupbuy_id FROM watsup.groupbuy INNER JOIN watsup.order ON watsup.order.groupbuy_id=watsup.groupbuy.groupbuy_id WHERE order.user_id = '%s'", user))
 	// close if there is an error
 	if err != nil {
 		fmt.Println("query issue")
@@ -109,7 +109,7 @@ func OrdersByUser(user string) ([]GroupbuyDashboard, error) {
 	//for loop to read through each row of data
 	for rows.Next() {
 		var order GroupbuyDashboard
-		err := rows.Scan(&order.Name, &order.Order_date, &order.Status)
+		err := rows.Scan(&order.Name, &order.Order_date, &order.Status, &order.Groupbuy_id)
 		if err != nil {
 			fmt.Println("scan issue")
 			fmt.Println(err)
